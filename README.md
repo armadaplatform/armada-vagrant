@@ -9,7 +9,7 @@ for your own microservices.
 
 After the service has been built it contains proper Armada image in the container. To access it run:
 
-    armada run static-file-server -r armada-vagrant -v [absolute path to static dir]
+    armada run static-file-server -r armada-vagrant -v [absolute path to static dir]:/var/opt/armada-vagrant
 
 Endpoint for `Vagrantfile` provided by the service is [/ArmadaVagrantfile.rb](static/ArmadaVagrantfile.rb).
 It returns Ruby script that provides single function `armada_vagrantfile()`. Running this function from the
