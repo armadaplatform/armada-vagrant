@@ -33,11 +33,11 @@ SCRIPT
             config.vm.provision "shell", inline: <<SCRIPT
                 dockyard_address=#{origin_dockyard_address}
                 proto="$(echo $dockyard_address | grep :// | sed -e's,^\(.*://\).*,\1,g')"
-                if [[ ! -z $proto ]] ; then
-                   # remove the protocol
-                   url=$(echo $1 | sed -e s,$proto,,g)
-                else
+                if [[ -z $proto ]] ; then
                    url="$dockyard_address"
+                else
+                   # remove the protocol
+                   url=$(echo $dockyard_address | sed -e s,$proto,,g)
                 fi
 
                 armada dockyard set origin $url
