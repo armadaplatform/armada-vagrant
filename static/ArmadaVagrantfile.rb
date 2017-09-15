@@ -7,7 +7,7 @@ def armada_vagrantfile(args={})
     secret_configs_repository = args[:secret_configs_repository]
 
     vagrantfile_api_version = "2"
-
+    Vagrant.require_version ">= 2.0.0"
     Vagrant.configure(vagrantfile_api_version) do |config|
 
         config.vm.box = "armada"
@@ -20,39 +20,28 @@ def armada_vagrantfile(args={})
         end
 
         # Port forwarding.
-        config.vm.network "public_network", :adapter => 2
+        config.vm.network "public_network", :adapter => 2, :use_dhcp_assigned_default_route => true
 
         # Mapping directories.
         config.vm.synced_folder "..", "/projects"
 
         config.vm.provision "shell", inline: <<SCRIPT
-            docker rm -f `docker ps | grep armada | cut -f 1 -d ' '`
-            rm /var/run/armada.pid
-            sudo echo default_interface=eth1 > /etc/default/armada
-            sudo service armada start
+            sudo service armada restart
             sudo chmod 777 /etc/opt
 SCRIPT
         if origin_dockyard_address then
-            if origin_dockyard_address.index('http://') == 0 then
-                http_origin_dockyard_address = origin_dockyard_address
-            else
-                http_origin_dockyard_address = 'http://' + origin_dockyard_address
-            end
             config.vm.provision "shell", inline: <<SCRIPT
-                dockyard_port=55000
-                [[ -n $(curl -s localhost:8900/list?microservice_name=origin-dockyard-proxy | grep microservice_id) ]] && proxy_started=true || proxy_started=false
-                while [[ "$proxy_started" != "true" && $dockyard_port -lt 55010 ]]
-                do
-                    armada run armada-bind -r origin-dockyard-proxy -e "SERVICE_ADDRESS=#{http_origin_dockyard_address}" -p ${dockyard_port}:80
-                    status=$?
-                    sleep 2
-                    if [ $status -eq 0 ]; then
-                        proxy_started=true
-                        armada dockyard set origin localhost:$dockyard_port
-                    else
-                        dockyard_port=$((dockyard_port + 1))
-                    fi
-                done
+                dockyard_address=#{origin_dockyard_address}
+                proto="$(echo $dockyard_address | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+                if [[ -z $proto ]] ; then
+                   url="$dockyard_address"
+                else
+                   # remove the protocol
+                   url=$(echo $dockyard_address | sed -e s,$proto,,g)
+                fi
+
+                armada dockyard set origin $url
+
 SCRIPT
         end
 
