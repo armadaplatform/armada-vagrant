@@ -80,7 +80,8 @@ SCRIPT
                 sudo -u vagrant echo armada develop -v /opt/#{microservice_name} #{microservice_name} >> /home/vagrant/.bashrc
                 export MICROSERVICE_NAME='#{microservice_name}'
                 export VAGRANT_MICROSERVICE_NAME='#{microservice_name}'
-                armada run #{armada_run_args} | cat
+                set +e
+                armada run #{armada_run_args}
 SCRIPT
         end
     end
