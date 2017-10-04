@@ -82,6 +82,7 @@ SCRIPT
                 export VAGRANT_MICROSERVICE_NAME='#{microservice_name}'
                 set +e
                 armada run #{armada_run_args}
+                set -e
 SCRIPT
         end
     end
