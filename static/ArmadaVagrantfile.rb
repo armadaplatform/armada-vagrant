@@ -75,7 +75,15 @@ SCRIPT
 
             config.vm.provision "shell", inline: <<SCRIPT
                 sudo -u vagrant echo export MICROSERVICE_NAME='#{microservice_name}' >> /home/vagrant/.bashrc
-                MICROSERVICE_NAME='#{microservice_name}' armada run #{armada_run_args} | cat
+                sudo -u vagrant echo export VAGRANT_MICROSERVICE_NAME='#{microservice_name}' >> /home/vagrant/.bashrc
+                sudo -u vagrant echo cd /opt/#{microservice_name} >> /home/vagrant/.bashrc
+                sudo -u vagrant echo armada develop -v /opt/#{microservice_name} #{microservice_name} >> /home/vagrant/.bashrc
+                export VAGRANT_MICROSERVICE_NAME='#{microservice_name}'
+                cd /opt/#{microservice_name}
+                armada develop
+                set +e
+                armada run #{armada_run_args}
+                set -e
 SCRIPT
         end
     end
